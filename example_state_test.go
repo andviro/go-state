@@ -3,83 +3,107 @@ package state_test
 import (
 	"fmt"
 	"github.com/andviro/go-state"
+	"golang.org/x/net/context"
 )
 
-// Some user type holding state context
-type Counter struct {
-	X        int
-	Messages chan bool
-	Result   chan int
+// Counter is a user type holding state variables
+type Counter int
+
+// InPort extracts message in port from state context
+func InPort(ctx context.Context) chan bool {
+	return ctx.Value("InPort").(chan bool)
+}
+
+// OutPort extracts result out port from state context
+func OutPort(ctx context.Context) chan Counter {
+	return ctx.Value("OutPort").(chan Counter)
 }
 
 // Here go some state functions that comprise the machine
 
-func (c *Counter) Start() state.Func {
-	c.X = 0
+func (c *Counter) Start(ctx context.Context) state.Func {
+	*c = 0
 	return c.Main // Start -> Main
 }
 
-func (c *Counter) Main() state.Func {
-	for msg := range c.Messages {
-		if msg {
-			return c.Inc // Main -> Inc
-		} else {
-			return c.Dec // Main -> Dec
+func (c *Counter) Main(ctx context.Context) state.Func {
+	for {
+		select {
+		case msg := <-InPort(ctx):
+			if msg {
+				return c.Inc // Main -> Inc
+			} else {
+				return c.Dec // Main -> Dec
+			}
+		case <-ctx.Done():
+			return c.Stop // Main -> Stop
 		}
 	}
-	return c.Stop // Main -> Stop
 }
 
-func (c *Counter) Inc() state.Func {
-	c.X += 1
+func (c *Counter) Inc(ctx context.Context) state.Func {
+	*c += 1
 	return c.Main // Inc -> Main
 }
 
-func (c *Counter) Dec() state.Func {
-	c.X -= 1
+func (c *Counter) Dec(ctx context.Context) state.Func {
+	*c -= 1
 	return c.Main // Dec -> Main
 }
 
-func (c *Counter) Stop() state.Func {
+func (c *Counter) Stop(ctx context.Context) state.Func {
 	fmt.Println("Finished counting")
-	c.Result <- c.X
+	OutPort(ctx) <- *c
 	return nil // Stop -> END
 }
 
 func Example() {
-	ctr := Counter{0, make(chan bool), make(chan int)}
+	ctr := Counter(-1)
+	initialCtx, cancel := context.WithCancel(context.TODO())
+	ctx := context.WithValue(
+		context.WithValue(initialCtx, "InPort", make(chan bool)),
+		"OutPort",
+		make(chan Counter),
+	)
 
 	// Here we use hook function to do something on state change
-	go state.Run(ctr.Start, func(s state.Func) error {
-		fmt.Printf("Entered state %s, counter value is %d\n", s.Name(), ctr.X)
+	go state.Run(ctx, ctr.Start, func(c context.Context) error {
+		switch n := state.Name(c); n {
+		case "Start", "Stop", "Main":
+			fmt.Printf("%s: %d\n", n, ctr)
+		case "Inc":
+			fmt.Println("+1")
+		case "Dec":
+			fmt.Println("-1")
+		}
 		return nil
 	})
 
 	// Send some messages to machine
 	for _, msg := range []bool{true, false, false, true, true, false} {
-		ctr.Messages <- msg
+		InPort(ctx) <- msg
 	}
 
 	// Signal machine termination and wait for the result
-	close(ctr.Messages)
-	fmt.Printf("Final value is %d\n", <-ctr.Result)
+	cancel()
+	fmt.Printf("Final value is %d\n", <-OutPort(ctx))
 
 	// Output:
-	// Entered state Start, counter value is 0
-	// Entered state Main, counter value is 0
-	// Entered state Inc, counter value is 0
-	// Entered state Main, counter value is 1
-	// Entered state Dec, counter value is 1
-	// Entered state Main, counter value is 0
-	// Entered state Dec, counter value is 0
-	// Entered state Main, counter value is -1
-	// Entered state Inc, counter value is -1
-	// Entered state Main, counter value is 0
-	// Entered state Inc, counter value is 0
-	// Entered state Main, counter value is 1
-	// Entered state Dec, counter value is 1
-	// Entered state Main, counter value is 0
-	// Entered state Stop, counter value is 0
+	// Start: -1
+	// Main: 0
+	// +1
+	// Main: 1
+	// -1
+	// Main: 0
+	// -1
+	// Main: -1
+	// +1
+	// Main: 0
+	// +1
+	// Main: 1
+	// -1
+	// Main: 0
+	// Stop: 0
 	// Finished counting
 	// Final value is 0
 }
