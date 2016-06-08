@@ -6,15 +6,19 @@ import (
 	"golang.org/x/net/context"
 )
 
-// Counter is a user type holding state variables
+// Counter is a user type holding integer variable.
+// Each instance of the Counter is a separate state machine.
 type Counter int
 
-// InPort extracts message in port from state context
+// Context provides an environment for state machine.
+// Different machines can use common initial context, to share a message channel, for example.
+
+// InPort extracts message input port from state context
 func InPort(ctx context.Context) chan bool {
 	return ctx.Value("InPort").(chan bool)
 }
 
-// OutPort extracts result out port from state context
+// OutPort extracts result output port from state context
 func OutPort(ctx context.Context) chan Counter {
 	return ctx.Value("OutPort").(chan Counter)
 }
