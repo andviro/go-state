@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"regexp"
 	"runtime"
+	"runtime/debug"
 )
 
 type stateKeyType int
@@ -13,6 +14,16 @@ type stateKeyType int
 const (
 	stateKey stateKeyType = iota
 )
+
+// StateError stores recovered error value and its stack trace
+type StateError struct {
+	Value      interface{}
+	StackTrace []byte
+}
+
+func (r *StateError) Error() string {
+	return fmt.Sprintf("%v\n%s", r.Value, string(r.StackTrace))
+}
 
 // Func is a basic building block of state machine. It's a simple function that does some work,
 // maybe listens to channels and returns next state, based on arbitrary conditions.
@@ -44,11 +55,7 @@ func Name(ctx context.Context) string {
 func Run(ctx context.Context, initial Func, hooks ...Hook) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			var ok bool
-			err, ok = e.(error)
-			if !ok {
-				err = fmt.Errorf("Panic: %v", e)
-			}
+			err = &StateError{e, debug.Stack()}
 		}
 	}()
 
