@@ -15,18 +15,23 @@ const (
 	stateKey stateKeyType = iota
 )
 
-// Error stores recovered error value and its stack trace
-type Error struct {
-	Value      interface{}
-	StackTrace []byte
+type Error interface {
+	error
+	StackTrace() string
 }
 
-func (r *Error) Error() string {
-	return fmt.Sprintf("%v", r.Value)
+// stateError stores recovered error value and its stack trace
+type stateError struct {
+	value      interface{}
+	stackTrace []byte
 }
 
-func (r *Error) String() string {
-	return fmt.Sprintf("%v\n%s", r.Value, string(r.StackTrace))
+func (r *stateError) Error() string {
+	return fmt.Sprintf("%v", r.value)
+}
+
+func (r *stateError) StackTrace() string {
+	return string(r.stackTrace)
 }
 
 // Func is a basic building block of state machine. It's a simple function that does some work,
@@ -59,7 +64,7 @@ func Name(ctx context.Context) string {
 func Run(ctx context.Context, initial Func, hooks ...Hook) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			err = &Error{e, debug.Stack()}
+			err = &stateError{e, debug.Stack()}
 		}
 	}()
 
