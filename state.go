@@ -15,13 +15,17 @@ const (
 	stateKey stateKeyType = iota
 )
 
-// StateError stores recovered error value and its stack trace
-type StateError struct {
+// Error stores recovered error value and its stack trace
+type Error struct {
 	Value      interface{}
 	StackTrace []byte
 }
 
-func (r *StateError) Error() string {
+func (r Error) Error() string {
+	return fmt.Sprintf("%v", r.Value)
+}
+
+func (r Error) String() string {
 	return fmt.Sprintf("%v\n%s", r.Value, string(r.StackTrace))
 }
 
@@ -55,7 +59,7 @@ func Name(ctx context.Context) string {
 func Run(ctx context.Context, initial Func, hooks ...Hook) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			err = &StateError{e, debug.Stack()}
+			err = Error{e, debug.Stack()}
 		}
 	}()
 

@@ -92,9 +92,14 @@ func TestPanicRecovery(t *testing.T) {
 	}
 
 	err := state.Run(context.TODO(), s.One, hook1, hook2)
-	if err.Error() != "Panic: Aaaargh!!!" {
-		t.Error("Panic not recovered correctly", err)
+	if err.Error() != "Aaaargh!!!" {
+		t.Errorf("Panic not recovered correctly: %v", err)
 	}
+
+	if _, ok := err.(state.Error); !ok {
+		t.Errorf("Invalid type for error returned")
+	}
+
 	if temp != "1>One>2>One>1>Two>2>Two>1>Three>" {
 		t.Error("Invalid final value:", temp)
 	}
