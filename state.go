@@ -21,11 +21,11 @@ type Error struct {
 	StackTrace []byte
 }
 
-func (r Error) Error() string {
+func (r *Error) Error() string {
 	return fmt.Sprintf("%v", r.Value)
 }
 
-func (r Error) String() string {
+func (r *Error) String() string {
 	return fmt.Sprintf("%v\n%s", r.Value, string(r.StackTrace))
 }
 
@@ -59,7 +59,7 @@ func Name(ctx context.Context) string {
 func Run(ctx context.Context, initial Func, hooks ...Hook) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			err = Error{e, debug.Stack()}
+			err = &Error{e, debug.Stack()}
 		}
 	}()
 

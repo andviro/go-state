@@ -96,7 +96,7 @@ func TestPanicRecovery(t *testing.T) {
 		t.Errorf("Panic not recovered correctly: %v", err)
 	}
 
-	if _, ok := err.(state.Error); !ok {
+	if _, ok := err.(*state.Error); !ok {
 		t.Errorf("Invalid type for error returned")
 	}
 
