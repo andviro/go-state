@@ -1,15 +1,15 @@
 package state_test
 
 import (
-	"github.com/andviro/go-state"
-	"golang.org/x/net/context"
+	"context"
+	"gopkg.in/andviro/go-state.v2"
 	"testing"
 )
 
 type IntState int
 
 func (s *IntState) One(ctx context.Context) state.Func {
-	*s += 1
+	*s++
 	return s.Two
 }
 
@@ -31,7 +31,7 @@ func TestRun(t *testing.T) {
 		t.Error(err)
 	}
 	if s != 111 {
-		t.Errorf("Invalid final value:", s)
+		t.Errorf("Invalid final value: %v", s)
 	}
 }
 

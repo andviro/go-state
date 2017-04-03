@@ -1,9 +1,9 @@
 package state_test
 
 import (
+	"context"
 	"fmt"
-	"github.com/andviro/go-state"
-	"golang.org/x/net/context"
+	"gopkg.in/andviro/go-state.v2"
 )
 
 // Counter is a user type holding integer variable.

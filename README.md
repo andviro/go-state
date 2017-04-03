@@ -10,7 +10,8 @@ entry](https://blog.golang.org/two-go-talks-lexical-scanning-in-go-and).
 
 ## Usage
 
-See [example_state_test.go](https://github.com/andviro/go-state/blob/master/example_state_test.go) to get an idea.
+See [example_state_test.go](https://github.com/andviro/go-state/blob/v2/example_state_test.go) to
+get an idea.
 
 ## License
 

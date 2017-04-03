@@ -1,8 +1,8 @@
 package state_test
 
 import (
-	"github.com/andviro/go-state"
-	"golang.org/x/net/context"
+	"context"
+	"gopkg.in/andviro/go-state.v2"
 	"testing"
 )
 
