@@ -1,5 +1,10 @@
 # Go-state
 
+[![Buildo-stateo-state
+Status](https://travis-ci.org/andviro/g.svg?branch=master)](https://travis-ci.org/andviro/)g
+[![Coverage](http://gocover.io/_badge/gopkg.in/andviro/go-state.v2?0)](http://gocover.io/gopkg.in/andviro/go-state.v2)
+[![GoDoc](http://godoc.org/gopkg.in/andviro/go-state.v2?status.png)](http://godoc.org/gopkg.in/andviro/go-state.v2)
+
 A simple helper library for programming robust state-oriented applications
 
 ## Credits
