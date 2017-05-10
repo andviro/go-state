@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"runtime"
 	"runtime/debug"
+	"strings"
 )
 
 type stateKeyType int
@@ -44,7 +45,7 @@ type Func func(context.Context) Func
 // Context parameter allows to extract current state name using `Name()`
 type Hook func(context.Context) error
 
-var nameRe = regexp.MustCompile(`(\w+)([-][^-]*)?$`)
+var nameRe = regexp.MustCompile(`(\w+\)?)([-][^-]*)?$`)
 
 // Name returns name of current state extracted from context
 func Name(ctx context.Context) string {
@@ -53,7 +54,7 @@ func Name(ctx context.Context) string {
 		return "<Undefined>"
 	}
 	name := runtime.FuncForPC(reflect.ValueOf(*f).Pointer()).Name()
-	return nameRe.FindStringSubmatch(name)[1]
+	return strings.TrimRight(nameRe.FindStringSubmatch(name)[1], ")")
 }
 
 // Run starts the state machine with the provided context and initial Func.
