@@ -48,11 +48,11 @@ var nameRe = regexp.MustCompile(`(\w+)([-][^-]*)?$`)
 
 // Name returns name of current state extracted from context
 func Name(ctx context.Context) string {
-	f, ok := ctx.Value(stateKey).(Func)
+	f, ok := ctx.Value(stateKey).(*Func)
 	if !ok {
 		return "<Undefined>"
 	}
-	name := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
+	name := runtime.FuncForPC(reflect.ValueOf(*f).Pointer()).Name()
 	return nameRe.FindStringSubmatch(name)[1]
 }
 
@@ -68,15 +68,15 @@ func Run(ctx context.Context, initial Func, hooks ...Hook) (err error) {
 		}
 	}()
 
+	ctx = context.WithValue(ctx, stateKey, &initial)
 	for initial != nil {
-		nextC := context.WithValue(ctx, stateKey, initial)
 		for _, h := range hooks {
-			err = h(nextC)
+			err = h(ctx)
 			if err != nil {
 				return
 			}
 		}
-		initial = initial(nextC)
+		initial = initial(ctx)
 	}
 	return
 }
