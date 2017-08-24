@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/andviro/go-state.svg?branch=master)](https://travis-ci.org/andviro/go-state)
 [![Coverage](http://gocover.io/_badge/github.com/andviro/go-state?0)](http://gocover.io/github.com/andviro/go-state)
+[![Go Report Card](https://goreportcard.com/badge/github.com/andviro/go-state)](https://goreportcard.com/report/github.com/andviro/go-state)
 [![GoDoc](http://godoc.org/github.com/andviro/go-state?status.png)](http://godoc.org/github.com/andviro/go-state)
 
 A simple helper library for programming robust state-oriented applications
