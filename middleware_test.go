@@ -2,7 +2,7 @@ package state_test
 
 import (
 	"context"
-	"gopkg.in/andviro/go-state.v2"
+	"github.com/andviro/go-state"
 	"testing"
 )
 

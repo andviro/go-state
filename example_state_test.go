@@ -3,7 +3,7 @@ package state_test
 import (
 	"context"
 	"fmt"
-	"gopkg.in/andviro/go-state.v2"
+	"github.com/andviro/go-state"
 )
 
 // Counter is a user type holding integer variable.

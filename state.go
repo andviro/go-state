@@ -2,12 +2,12 @@ package state
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"regexp"
 	"runtime"
-	"runtime/debug"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type stateKeyType int
@@ -15,25 +15,6 @@ type stateKeyType int
 const (
 	stateKey stateKeyType = iota
 )
-
-type Error interface {
-	error
-	StackTrace() string
-}
-
-// stateError stores recovered error value and its stack trace
-type stateError struct {
-	value      interface{}
-	stackTrace []byte
-}
-
-func (r *stateError) Error() string {
-	return fmt.Sprintf("%v", r.value)
-}
-
-func (r *stateError) StackTrace() string {
-	return string(r.stackTrace)
-}
 
 // Func is a basic building block of state machine. It's a simple function that does some work,
 // maybe listens to channels and returns next state, based on arbitrary conditions.
@@ -65,16 +46,20 @@ func Name(ctx context.Context) string {
 func Run(ctx context.Context, initial Func, hooks ...Hook) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			err = &stateError{e, debug.Stack()}
+			pe, ok := e.(error)
+			if !ok {
+				pe = errors.Errorf("%+v", e)
+			}
+			err = errors.Wrapf(pe, "panic (original error: %+v)", err)
 		}
 	}()
 
 	ctx = context.WithValue(ctx, stateKey, &initial)
 	for initial != nil {
-		for _, h := range hooks {
+		for i, h := range hooks {
 			err = h(ctx)
 			if err != nil {
-				return
+				return errors.Wrapf(err, "applying state hook %d", i)
 			}
 		}
 		initial = initial(ctx)

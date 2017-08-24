@@ -2,8 +2,11 @@ package state_test
 
 import (
 	"context"
-	"gopkg.in/andviro/go-state.v2"
 	"testing"
+
+	"github.com/pkg/errors"
+
+	"github.com/andviro/go-state"
 )
 
 type IntState int
@@ -92,12 +95,8 @@ func TestPanicRecovery(t *testing.T) {
 	}
 
 	err := state.Run(context.TODO(), s.One, hook1, hook2)
-	if err.Error() != "Aaaargh!!!" {
+	if errors.Cause(err).Error() != "Aaaargh!!!" {
 		t.Errorf("Panic not recovered correctly: %v", err)
-	}
-
-	if _, ok := err.(state.Error); !ok {
-		t.Errorf("Invalid type for error returned")
 	}
 
 	if temp != "1>One>2>One>1>Two>2>Two>1>Three>" {
