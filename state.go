@@ -2,6 +2,7 @@ package state
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"regexp"
 	"runtime"
@@ -48,9 +49,13 @@ func Run(ctx context.Context, initial Func, hooks ...Hook) (err error) {
 		if e := recover(); e != nil {
 			pe, ok := e.(error)
 			if !ok {
-				pe = errors.Errorf("%+v", e)
+				pe = fmt.Errorf("%+v", e)
 			}
-			err = errors.Wrapf(pe, "panic (original error: %+v)", err)
+			msg := fmt.Sprintf("panic in %s", Name(ctx))
+			if err != nil {
+				msg += fmt.Sprintf("\noriginal error: %+v", err)
+			}
+			err = errors.Wrap(pe, msg)
 		}
 	}()
 

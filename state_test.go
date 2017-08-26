@@ -98,6 +98,7 @@ func TestPanicRecovery(t *testing.T) {
 	if errors.Cause(err).Error() != "Aaaargh!!!" {
 		t.Errorf("Panic not recovered correctly: %v", err)
 	}
+	t.Logf("%+v", err)
 
 	if temp != "1>One>2>One>1>Two>2>Two>1>Three>" {
 		t.Error("Invalid final value:", temp)
